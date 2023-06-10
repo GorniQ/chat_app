@@ -1,0 +1,5 @@
+1. (Settings)Add things to settings page (Change name or some things).
+2. (Active Users)Make that Create Chat button is gray (disabled) when chat with this person exists
+3. (Admin: Manage Users) Add things to Manage Users page (baning, deleting peoples, deleting chats)
+4. Active users don't work propertly. When user register he is automaticly logged in but not marked as active in database.
+5. (ad. 3)Make that person that is banned cannot login
