@@ -1,0 +1,36 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<h1>Chats</h1>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>User</th>
+			<th>Status</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for chat in chats %}
+		<tr>
+			<td>
+				<a href="{{ url_for('views.chat', chat_id=chat.id) }}">
+					{% if chat.user1_id == current_user.id %} {{
+					chat.user2.first_name }} {{ chat.user2.last_name }} {% else
+					%} {{ chat.user1.first_name }} {{ chat.user1.last_name }} {%
+					endif %}
+				</a>
+			</td>
+			<td>
+				{% if is_user_online(chat.user1) %}
+				<span class="dot dot-green"></span>
+				{% else %}
+				<span class="dot dot-gray"></span>
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<a href="{{ url_for('views.active') }}" class="btn btn-primary">Active Users</a>
+{% endblock %}

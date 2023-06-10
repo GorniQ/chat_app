@@ -1,0 +1,37 @@
+{% extends "base.html" %} {% block title %}Active Users{% endblock %} {% block
+content %}
+<div class="container">
+	<h1>Active Users</h1>
+	<ul class="list-group">
+		{% for user in users %}
+		<li class="list-group-item">
+			{{ user.first_name }} {{ user.last_name }} {% if
+			is_user_online(user) %}
+			<span class="dot dot-green"></span>
+			{% else %}
+			<span class="dot dot-gray"></span>
+			{% endif %} {% if user.id != current_user.id %}
+			<button
+				class="btn btn-primary create-chat-btn"
+				data-userid="{{ user.id }}"
+			>
+				Create Chat
+			</button>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endblock %} {% block javascript %} {{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.min.js"></script>
+<script>
+	var socket = io();
+
+	document.querySelectorAll(".create-chat-btn").forEach(function (button) {
+		button.addEventListener("click", function () {
+			var userId = this.getAttribute("data-userid");
+			socket.emit("create_chat", { userId: userId });
+		});
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+.dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.dot-green {
+    background-color: green;
+}
+
+.dot-gray {
+    background-color: gray;
+}
+
+.chat-list {
+list-style-type: none;
+padding: 0;
+}
+
+.chat-list li {
+margin-bottom: 10px;
+}
+
+.chat-user {
+margin-right: 10px;
+font-weight: bold;
+}
