@@ -43,39 +43,37 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.min.js"></script>
 <script>
-	document.addEventListener('DOMContentLoaded', () => {
-	  const chatWindow = document.getElementById('chat-window');
-	  const messageForm = document.getElementById('message-form');
-	  const messageInput = document.getElementById('message-input');
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatWindow = document.getElementById('chat-window');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
 
-	  const socket = io();
+    const socket = io();
 
-	  socket.on('connect', () => {
-	    socket.emit('join_chat', { chatId: {{ chat.id }} });
-	  });
+    socket.on('connect', () => {
+      socket.emit('join_chat', { chatId: {{ chat.id }} });
+    });
 
-	  socket.on('new_message', (data) => {
-	     const message = document.createElement('p');
-	     if (data.sender.id === {{ current_user.id }}) {
-	         message.classList.add('current-user-message');
-	     }
-	     message.innerHTML = `
-	         <span class="message-date">${data.timestamp}</span>
-	         <span>${data.sender.first_name} ${data.sender.last_name}:</span>
-	         <span>${data.message}</span>
-	     `;
-	     chatWindow.appendChild(message);
-	     chatWindow.scrollTop = chatWindow.scrollHeight;
-	 });
+    // Listen for the new_message event
+    socket.on('new_message', (data) => {
+      const message = document.createElement('p');
+      message.innerHTML = `
+        <span class="message-date">${data.timestamp}</span>
+        <span>${data.sender.first_name} ${data.sender.last_name}:</span>
+        <span>${data.message}</span>
+      `;
+      chatWindow.appendChild(message);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    });
 
-	  messageForm.addEventListener('submit', (e) => {
-	    e.preventDefault();
-	    const message = messageInput.value;
-	    if (message.trim() !== '') {
-	      socket.emit('send_message', { chatId: {{ chat.id }}, message: message });
-	      messageInput.value = '';
-	    }
-	  });
-	});
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = messageInput.value;
+      if (message.trim() !== '') {
+        socket.emit('send_message', { chatId: {{ chat.id }}, message: message });
+        messageInput.value = '';
+      }
+    });
+  });
 </script>
 {% endblock %}

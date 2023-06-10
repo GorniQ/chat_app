@@ -53,13 +53,9 @@ def send_message(data):
     db.session.add(message)
     db.session.commit()
 
-    sender = User.query.get(current_user.id)
-
-    emit('new_message', {
-        'sender': sender,
-        'message': message_content,
-        'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M')
-    }, room=str(chat_id))
+    # Emit the new message event to the chat room
+    socketio.emit('new_message', {
+                  'message': message_content}, room=str(chat_id))
 
 
 @views.route('/active', methods=['GET', 'POST'])
