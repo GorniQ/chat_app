@@ -27,3 +27,11 @@ margin-bottom: 10px;
 margin-right: 10px;
 font-weight: bold;
 }
+
+.disabled-button {
+    /* Apply the desired styling for the disabled button */
+    background-color: #ccc; /* Gray background color */
+    color: #888; /* Gray text color */
+    cursor: not-allowed; /* Display a 'not-allowed' cursor */
+    pointer-events: none; /* Disable pointer events */
+  }

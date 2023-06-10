@@ -9,6 +9,22 @@ import json
 views = Blueprint('views', __name__)
 
 
+class MessageEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Message):
+            return {
+                'id': obj.id,
+                'content': obj.content,
+                'timestamp': obj.timestamp.strftime('%Y-%m-%d %H:%M'),
+                'sender_id': obj.sender_id,
+                'sender': {
+                    'first_name': obj.sender.first_name,
+                    'last_name': obj.sender.last_name
+                }
+            }
+        return super().default(obj)
+
+
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
@@ -34,7 +50,7 @@ def chat(chat_id):
     messages = Message.query.filter_by(chat_id=chat_id).options(
         joinedload(Message.sender)).all()
 
-    return render_template("chats.html", chat=chat, other_user=other_user, user=current_user, messages=messages, User=User)
+    return render_template("chats.html", chat=chat, other_user=other_user, user=current_user, messages=messages)
 
 
 @socketio.on('join_chat')
@@ -53,9 +69,19 @@ def send_message(data):
     db.session.add(message)
     db.session.commit()
 
-    # Emit the new message event to the chat room
-    socketio.emit('new_message', {
-                  'message': message_content}, room=str(chat_id))
+    # Retrieve the message with the sender information
+    message_with_sender = Message.query.filter_by(
+        id=message.id).join(User).first()
+
+    emit('new_message', {
+        'message': message_content,
+        'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M'),
+        'sender_id': current_user.id,
+        'sender': {
+            'first_name': current_user.first_name,
+            'last_name': current_user.last_name
+        }
+    }, room=str(chat_id))
 
 
 @views.route('/active', methods=['GET', 'POST'])
