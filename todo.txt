@@ -1,1 +1,0 @@
-4. Active users don't work propertly. When user register he is automaticly logged in but not marked as active in database.
