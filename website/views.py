@@ -88,7 +88,7 @@ def send_message(data):
 @views.route('/active', methods=['GET', 'POST'])
 def active():
     users = User.query.all()
-    chats = User.query.all()
+    chats = Chat.query.all()
 
     def is_user_online(user):
         return user.is_online
@@ -164,8 +164,18 @@ def unban(data):
 @socketio.on('delete_user')
 def delete_user(data):
     user = User.query.filter_by(id=data['userId']).first()
-    db.session.delete(user)
-    db.session.commit()
+    if user:
+        # delete all associated data
+        Message.query.filter((Message.sender_id == data['userId']) | (Message.chat.has(
+            user1_id=data['userId'])) | (Message.chat.has(user2_id=data['userId']))).delete()
+
+        Chat.query.filter((Chat.user1_id == data['userId']) | (
+            Chat.user2_id == data['userId'])).delete()
+
+        Ban.query.filter_by(user_id=data['userId']).delete()
+
+        db.session.delete(user)
+        db.session.commit()
 
     flash('User removed.', category='error')
 
@@ -175,6 +185,7 @@ def delete_user(data):
 def update_last_seen():
     user = User.query.filter_by(id=current_user.id).first()
     if user:
+        user.is_online = True
         user.last_seen = datetime.now()
         db.session.commit()
 
