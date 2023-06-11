@@ -3,24 +3,24 @@
    <h1>Users</h1>
    <ul class="list-group">
       {% for user_ in users %}
-      <li class="list-group-item">
+      <li class="list-group-item d-flex">
          {{ user_.first_name }} {{ user_.last_name }} {% if
          is_user_online(user_) %}
-         <span class="dot dot-green"></span>
+         <span class="dot dot-green mr-auto p-2"></span>
          {% else %}
-         <span class="dot dot-gray"></span>
+         <span class="dot dot-gray mr-auto p-2"></span>
          {% endif %} {% if user_.id != current_user.id %}
          {% if not is_user_banned(user_) %}
-         <button class="btn btn-danger ban-user-btn" data-userid="{{ user_.id }}">
+         <button class="btn btn-danger ban-user-btn p-2 mr-2" data-userid="{{ user_.id }}">
             Ban user
          </button>
          {% else %}
-         Ban reason: {{ is_user_banned(user_).reason }}
-         <button class="btn btn-primary unban-user-btn" data-userid="{{ user_.id }}">
+         <div class="mr-auto p-2">Ban reason: {{ is_user_banned(user_).reason }}</div>
+         <button class="btn btn-primary unban-user-btn p-2 mr-2" data-userid="{{ user_.id }}">
             Unban user
          </button>
          {% endif %}
-         <button class="btn btn-danger delete-user-btn" data-userid="{{ user_.id }}">
+         <button class="btn btn-danger delete-user-btn p-2 mr-2" data-userid="{{ user_.id }}">
             Delete user
          </button>
          {% endif %}
