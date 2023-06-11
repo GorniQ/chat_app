@@ -179,6 +179,13 @@ def delete_user(data):
 
     flash('User removed.', category='error')
 
+@socketio.on('give_mod')
+def give_mod(data):
+    user = User.query.filter_by(id=data['userId']).first()
+    user.is_moderator = True
+    db.session.commit()
+
+    flash(f'Given moderator to {user.first_name} {user.last_name}.', category='success')
 
 @views.before_request
 @login_required

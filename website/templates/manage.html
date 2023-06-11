@@ -23,6 +23,11 @@
          <button class="btn btn-danger delete-user-btn p-2 mr-2" data-userid="{{ user_.id }}">
             Delete user
          </button>
+         {% if not user_.is_moderator %}
+         <button class="btn btn-primary give-mod-btn p-2 mr-2" data-userid="{{ user_.id }}">
+            Give Mod
+         </button>   
+         {% endif%}
          {% endif %}
       </li>
       {% endfor %}
@@ -55,6 +60,14 @@
       button.addEventListener("click", function () {
          var userId = this.getAttribute("data-userid");
          socket.emit("delete_user", { userId: userId });
+         location.reload()
+      });
+   });
+
+   document.querySelectorAll(".give-mod-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+         var userId = this.getAttribute("data-userid");
+         socket.emit("give_mod", { userId: userId });
          location.reload()
       });
    });
