@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import User, OnlineUser
+from .models import User, Ban
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
@@ -12,17 +12,21 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-
         user = User.query.filter_by(email=email).first()
+
         if user:
-            if check_password_hash(user.password, password):
+            user_bans = Ban.query.filter_by(user_id=user.id).all()
+
+            if user_bans:
+                flash('This account has been banned!', category='error')
+            elif check_password_hash(user.password, password):
                 flash('Logged in successfuly!', category='success')
                 login_user_with_online_status(user, remember=True)
                 return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password, try again.', category='error')
         else:
-            flash('Email not exist.', category='error')
+            flash('Email doesn\'t exist.', category='error')
 
     return render_template("login.html", user=current_user)
 
@@ -45,7 +49,7 @@ def sign_up():
 
         user = User.query.filter_by(email=email).first()
         isCorrect = check_data(user, email, first_name,
-                               last_name, password1, password2)
+                            last_name, password1, password2)
         if isCorrect:
             new_user = User(email=email, first_name=first_name, last_name=last_name,
                             password=generate_password_hash(password1, method='sha256'), is_moderator=False)
@@ -87,14 +91,8 @@ def check_data(user, email, first_name, last_name, password1, password2):
 
 
 def update_user_online_status(user, is_online):
-    online_user = OnlineUser.query.filter_by(user_id=user.id).first()
-    if is_online:
-        if not online_user:
-            online_user = OnlineUser(user_id=user.id)
-            db.session.add(online_user)
-    else:
-        if online_user:
-            db.session.delete(online_user)
+    user.is_online = is_online
+    db.session.add(user)
     db.session.commit()
 
 

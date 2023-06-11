@@ -1,2 +1,61 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-%} {% endblock %}
+{% extends "base.html" %} {% block title %}Administrator's panel{% endblock %} {% block content %}
+<div class="container">
+   <h1>Users</h1>
+   <ul class="list-group">
+      {% for user_ in users %}
+      <li class="list-group-item">
+         {{ user_.first_name }} {{ user_.last_name }} {% if
+         is_user_online(user_) %}
+         <span class="dot dot-green"></span>
+         {% else %}
+         <span class="dot dot-gray"></span>
+         {% endif %} {% if user_.id != current_user.id %}
+         {% if not is_user_banned(user_) %}
+         <button class="btn btn-danger ban-user-btn" data-userid="{{ user_.id }}">
+            Ban user
+         </button>
+         {% else %}
+         Ban reason: {{ is_user_banned(user_).reason }}
+         <button class="btn btn-primary unban-user-btn" data-userid="{{ user_.id }}">
+            Unban user
+         </button>
+         {% endif %}
+         <button class="btn btn-danger delete-user-btn" data-userid="{{ user_.id }}">
+            Delete user
+         </button>
+         {% endif %}
+      </li>
+      {% endfor %}
+   </ul>
+</div>
+{% endblock %} {% block javascript %} {{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.min.js"></script>
+<script>
+   var socket = io();
+
+   document.querySelectorAll(".ban-user-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+         var userId = this.getAttribute("data-userid");
+         var reason=prompt('Insert ban reason:', 'test')
+         socket.emit("ban_user", { userId: userId, reason: reason });
+         location.reload()
+      });
+   });
+
+   document.querySelectorAll(".unban-user-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+         var userId = this.getAttribute("data-userid");
+         socket.emit("unban", { userId: userId});
+         location.reload()
+      });
+   });
+
+   document.querySelectorAll(".delete-user-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+         var userId = this.getAttribute("data-userid");
+         socket.emit("delete_user", { userId: userId });
+         location.reload()
+      });
+   });
+</script>
+{% endblock %}

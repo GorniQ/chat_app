@@ -2,7 +2,7 @@ from flask_socketio import join_room, emit
 from sqlalchemy.orm import joinedload
 from flask import Blueprint, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
-from .models import Message, User, Chat, Ban, OnlineUser
+from .models import Message, User, Chat, Ban
 from . import db, socketio
 import json
 
@@ -32,8 +32,7 @@ def home():
         Chat.user2_id == current_user.id)).all()
 
     def is_user_online(user):
-        online_user = OnlineUser.query.filter_by(user_id=user.id).first()
-        return online_user is not None
+        return user.is_online
 
     return render_template('home.html', user=current_user, chats=chats, is_user_online=is_user_online)
 
@@ -87,22 +86,40 @@ def send_message(data):
 @views.route('/active', methods=['GET', 'POST'])
 def active():
     users = User.query.all()
+    chats = User.query.all()
 
     def is_user_online(user):
-        online_user = OnlineUser.query.filter_by(user_id=user.id).first()
-        return online_user is not None
+        return user.is_online
 
-    return render_template('active.html', users=users, user=current_user, is_user_online=is_user_online)
+    return render_template('active.html', users=users, user=current_user, chats=chats, is_user_online=is_user_online)
 
 
 @views.route('/settings', methods=['GET', 'POST'])
+@login_required
 def settings():
+    if request.method == 'POST':
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
+
+        current_user.first_name=first_name
+        current_user.last_name=last_name
+
+        db.session.add(current_user)
+        db.session.commit()
+        flash('Data has been modified!', category='success')
     return render_template("settings.html", user=current_user)
 
 
 @views.route('/manage', methods=['GET', 'POST'])
 def manage():
-    return render_template("manage.html", user=current_user)
+    def is_user_online(user):
+        return user.is_online
+
+    def is_user_banned(user):
+        return Ban.query.filter_by(user_id=user.id).first()
+
+    users = User.query.all()
+    return render_template("manage.html", user=current_user, users=users, is_user_online=is_user_online, is_user_banned=is_user_banned)
 
 
 @socketio.on('create_chat')
@@ -122,3 +139,27 @@ def create_chat(data):
     # Redirect the user to the new chat room
     redirect_url = '/chats/' + room
     emit('redirect', {'url': redirect_url}, room=room)
+
+@socketio.on('ban_user')
+def ban_user(data):
+    ban = Ban(user_id=data['userId'], reason = data['reason'])
+    db.session.add(ban)
+    db.session.commit()
+
+    flash('User banned.', category='error')
+
+@socketio.on('unban')
+def unban(data):
+    ban = Ban.query.filter_by(user_id=data['userId']).first()
+    db.session.delete(ban)
+    db.session.commit()
+
+    flash('User unbanned.', category='success')
+
+@socketio.on('delete_user')
+def delete_user(data):
+    user = User.query.filter_by(id=data['userId']).first()
+    db.session.delete(user)
+    db.session.commit()
+
+    flash('User removed.', category='error')

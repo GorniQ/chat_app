@@ -1,4 +1,3 @@
-import datetime
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
@@ -11,6 +10,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     is_moderator = db.Column(db.Boolean, default=False)
+    is_online = db.Column(db.Boolean, default=True)
+    last_seen = db.Column(db.DateTime(timezone=True), default=func.now())
 
 
 class Chat(db.Model):
@@ -37,10 +38,4 @@ class Ban(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     reason = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime(timezone=True), default=func.now())
-
-
-class OnlineUser(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    last_seen = db.Column(db.DateTime(timezone=True), default=func.now())
 

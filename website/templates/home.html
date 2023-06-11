@@ -14,18 +14,29 @@
 		<tr>
 			<td>
 				<a href="{{ url_for('views.chat', chat_id=chat.id) }}">
-					{% if chat.user1_id == current_user.id %} {{
-					chat.user2.first_name }} {{ chat.user2.last_name }} {% else
-					%} {{ chat.user1.first_name }} {{ chat.user1.last_name }} {%
-					endif %}
+					{% if chat.user1_id == current_user.id %}
+						{{ chat.user2.first_name }}
+						{{ chat.user2.last_name }}
+					{% else %}
+						{{ chat.user1.first_name }}
+						{{ chat.user1.last_name }}
+					{%	endif %}
 				</a>
 			</td>
 			<td>
-				{% if is_user_online(chat.user1) %}
-				<span class="dot dot-green"></span>
+				{% if chat.user1_id == current_user.id %}
+					{% if is_user_online(chat.user2) %}
+					<span class="dot dot-green"></span>
+					{% else %}
+					<span class="dot dot-gray"></span>
+					{% endif %}
 				{% else %}
-				<span class="dot dot-gray"></span>
-				{% endif %}
+					{% if is_user_online(chat.user1) %}
+					<span class="dot dot-green"></span>
+					{% else %}
+					<span class="dot dot-gray"></span>
+					{% endif %}
+				{%	endif %}
 			</td>
 		</tr>
 		{% endfor %}
