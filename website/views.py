@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
 from flask_socketio import join_room, emit
 from sqlalchemy.orm import joinedload
 from flask import Blueprint, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from .models import Message, User, Chat, Ban
+from .auth import logout_user_with_online_status
 from . import db, socketio
 import json
 
@@ -101,8 +103,8 @@ def settings():
         first_name = request.form.get('firstName')
         last_name = request.form.get('lastName')
 
-        current_user.first_name=first_name
-        current_user.last_name=last_name
+        current_user.first_name = first_name
+        current_user.last_name = last_name
 
         db.session.add(current_user)
         db.session.commit()
@@ -140,13 +142,15 @@ def create_chat(data):
     redirect_url = '/chats/' + room
     emit('redirect', {'url': redirect_url}, room=room)
 
+
 @socketio.on('ban_user')
 def ban_user(data):
-    ban = Ban(user_id=data['userId'], reason = data['reason'])
+    ban = Ban(user_id=data['userId'], reason=data['reason'])
     db.session.add(ban)
     db.session.commit()
 
     flash('User banned.', category='error')
+
 
 @socketio.on('unban')
 def unban(data):
@@ -156,6 +160,7 @@ def unban(data):
 
     flash('User unbanned.', category='success')
 
+
 @socketio.on('delete_user')
 def delete_user(data):
     user = User.query.filter_by(id=data['userId']).first()
@@ -163,3 +168,27 @@ def delete_user(data):
     db.session.commit()
 
     flash('User removed.', category='error')
+
+
+@views.before_request
+@login_required
+def update_last_seen():
+    user = User.query.filter_by(id=current_user.id).first()
+    if user:
+        user.last_seen = datetime.now()
+        db.session.commit()
+
+
+@views.before_request
+@login_required
+def update_is_user_online():
+    users = User.query.all()
+    for user in users:
+        if user.is_online:
+            time_since_activity = (
+                datetime.now() - user.last_seen).seconds / 60
+            print(
+                f"{user.first_name} {user.last_name} last seen: {time_since_activity}")
+            if time_since_activity >= 10:
+                user.is_online = False
+                db.session.commit()

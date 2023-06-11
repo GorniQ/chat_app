@@ -1,32 +1,33 @@
-{% extends "base.html" %} {% block title %}Active Users{% endblock %} {% block content %}
+{% extends "base.html" %} {% block title %}Active Users{% endblock %} {% block
+content %}
 <div class="container">
 	<h1>Active Users</h1>
 	<ul class="list-group">
 		{% for user in users %}
 		<li class="list-group-item">
-			{{ user.first_name }} {{ user.last_name }}
-			{% if user.is_online == True %}
+			{{ user.first_name }} {{ user.last_name }} {% if user.is_online ==
+			True %}
 			<span class="dot dot-green"></span>
 			{% else %}
 			<span class="dot dot-gray"></span>
-			{% endif %}
-			{% if user.id != current_user.id %}
-			{% set chat_exists = [] %}
-			{% for chat in chats %}
-				{% if chat.user1_id == current_user.id %}
-					{% if chat_exists.append(1) %} {% endif %}
-				{% endif %}
-			{% endfor %}
-			{% if chat_exists %}
-				<button class="btn btn-diabled create-chat-btn" data-userid='exists'>
-					Create Chat
-				</button>
+			{% endif %} {% if user.id != current_user.id %} {% set chat_exists =
+			[] %} {% for chat in chats %} {% if chat.user1_id == current_user.id
+			%} {% if chat_exists.append(1) %} {% endif %} {% endif %} {% endfor
+			%} {% if chat_exists %}
+			<button
+				class="btn btn-diabled create-chat-btn"
+				data-userid="exists"
+			>
+				Create Chat
+			</button>
 			{% else %}
-				<button class="btn btn-primary create-chat-btn" data-userid="{{ user.id }}">
-					Create Chat
-				</button>
-			{% endif %}
-			{% endif %}
+			<button
+				class="btn btn-primary create-chat-btn"
+				data-userid="{{ user.id }}"
+			>
+				Create Chat
+			</button>
+			{% endif %} {% endif %}
 		</li>
 		{% endfor %}
 	</ul>
@@ -40,10 +41,10 @@
 		button.addEventListener("click", function () {
 			var userId = this.getAttribute("data-userid");
 
-			if(userId != 'exists') {
+			if (userId != "exists") {
 				socket.emit("create_chat", { userId: userId });
 			}
-			location.reload()
+			location.reload();
 		});
 	});
 </script>

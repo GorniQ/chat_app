@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import User, Ban
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -49,13 +50,14 @@ def sign_up():
 
         user = User.query.filter_by(email=email).first()
         isCorrect = check_data(user, email, first_name,
-                            last_name, password1, password2)
+                               last_name, password1, password2)
         if isCorrect:
             new_user = User(email=email, first_name=first_name, last_name=last_name,
-                            password=generate_password_hash(password1, method='sha256'), is_moderator=False)
+                            password=generate_password_hash(password1, method='sha256'), is_moderator=False, last_seen=datetime.now())
             db.session.add(new_user)
             db.session.commit()
-            login_user(new_user, remember=True)
+            # Update user online status
+            login_user_with_online_status(new_user, remember=True)
             flash('Account created!', category='success')
             return redirect(url_for('views.home'))
     return render_template("sign_up.html", user=current_user)
