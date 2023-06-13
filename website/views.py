@@ -11,22 +11,6 @@ import json
 views = Blueprint('views', __name__)
 
 
-class MessageEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Message):
-            return {
-                'id': obj.id,
-                'content': obj.content,
-                'timestamp': obj.timestamp.strftime('%Y-%m-%d %H:%M'),
-                'sender_id': obj.sender_id,
-                'sender': {
-                    'first_name': obj.sender.first_name,
-                    'last_name': obj.sender.last_name
-                }
-            }
-        return super().default(obj)
-
-
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
